@@ -1,0 +1,10 @@
+#! /usr/bin/webtcl
+
+source lib/parental.tcl    
+content-type "text/plain"
+
+# Delete cookies and redirect to login page.
+cookie delete parent_email parent_hash
+location "/"
+
+return

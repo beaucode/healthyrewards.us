@@ -1,0 +1,17 @@
+#! /usr/bin/webtcl
+
+source lib/parental.tcl
+source lib/kid.tcl
+content-type "text/plain"
+
+output -string cookies:[cookie get parent_email]\n
+
+foreach {rowid email hash} [parental::parent get {rowid email password_hash} -all] {
+    output -string "$rowid\t$email\t$hash\n"
+}
+
+foreach {rowid username hash} [kid::kid get {rowid username password_hash} -all] {
+    output -string "$rowid\t$username\t$hash\n"
+}
+
+output -string done

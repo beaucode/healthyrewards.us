@@ -1,0 +1,114 @@
+#! /usr/bin/webtcl
+
+source lib/parental.tcl
+source lib/kid.tcl
+content-type "text/plain"
+
+set action [url var action]
+
+# Authenticate email/password.
+set email [cookie get parent_email]
+set hash  [cookie get parent_hash]
+if { ![parental::authenticatePasswordHash $email $hash] } {
+    location "/parents/login"
+    return
+}
+
+# Retrieve the rowid of the parent's account.
+set parental_id [parental::parent get rowid -expr {email=$email}]
+
+# Add a kid if necessary.
+if { $action == "addkid" } {
+    set username    [url var username]
+    set password    [url var password]
+    
+    # Display the html if necessary.
+    if { $username == ""  ||  $password == "" } {
+        content-type "text/html" -force 1
+        output -file "pages/html/Add_Kid.html" -sub 0
+        return
+    } elseif { ![kid::create $parental_id $username $password] } {
+        output -string "Username already exists! Pick another."
+        return
+    }
+    
+    location "/parents"
+    return
+}
+
+# Add a goal if necessary.
+if { $action == "addgoal" } {
+    set username    [url var username]
+    set goal        [url var goal]
+    set credits     [url var credits]
+    
+    # Make sure this kid belongs to this parent.
+    if { [kid::kid get parental_id -expr {username=$username}] == $parental_id } {
+        # Display the html if necessary.
+        if { $goal == ""  ||  $credits == "" } {
+            content-type "text/html" -force 1
+            output -file "pages/html/Add_Goal.html" -sub 1
+            return
+        } else {
+            kid::addGoal $username $goal $credits
+        }
+    } else {
+        output -string "Hey, that's not your kid!"
+        return
+    }
+    
+    location "/parents"
+}
+
+# Reverse a goal if necessary.
+if { $action == "reversegoal" } {
+    set username    [url var username]
+    set goal_id     [url var goal_id]
+    
+    # Make sure this kid belongs to this parent.
+    if { [kid::kid get parental_id -expr {username=$username}] == $parental_id } {
+        kid::reverseGoal $username $goal_id
+    } else {
+        output -string "Hey, that's not your kid!"
+        return
+    }
+    
+    location "/parents"
+}
+
+content-type "text/html" -force 1
+output -file "pages/html/Parent_Main.html" -sub 1
+# List each kid
+foreach {rowid username hash credits} [kid::kid get {rowid username password_hash credits} -all -expr {parental_id=$parental_id}] {
+    output -string "&nbsp;&nbsp;&nbsp;&nbsp;<b>$username</b> &nbsp; $credits credits &nbsp;&nbsp;&nbsp; <a href=\"/parents?action=addgoal&username=$username\">add goal</a><br>"
+    output -string "<table border='1' cellpadding='3'>"
+    foreach {rowid username goal credits complete} [kid::goal get {rowid username goal credits complete} -all -expr {username=$username}] {
+        output -string "<tr><form action='/parents'>"
+        output -string "<input type='hidden' name='action' value='reversegoal'>"
+        output -string "<input type='hidden' name='username' value='$username'>"
+        output -string "<input type='hidden' name='goal_id' value='$rowid'>"
+        output -string "<tr><td>$goal <td>$credits credits "
+        if { $complete } {
+            output -string "<td><font color='green'>completed!</font> <input type='submit' value='Mark as uncompleted'>"
+        } else {
+            output -string "<td><font color='red'>uncompleted</font>"
+        }
+        output -string "</form>"
+    }
+    output -string "</table>"
+    output -string "<br>"
+}
+output -file "pages/html/Parent_Main2.html"
+return
+
+# List kids.
+output -string "Your fat kids:\n"
+foreach {rowid username hash} [kid::kid get {rowid username password_hash} -all -expr {parental_id=$parental_id}] {
+    output -string "\t$rowid $username $hash\n"
+    foreach {rowid username goal credits complete} [kid::goal get {rowid username goal credits complete} -all -expr {username=$username}] {
+        output -string "\t\t$rowid $username $goal $credits $complete\n"
+    }
+}
+
+
+return

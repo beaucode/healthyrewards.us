@@ -1,0 +1,1 @@
+[Sat Apr 28 00:51:14 2012] [error] [client 184.187.147.72] Request exceeded the limit of 10 internal redirects due to probable configuration error. Use 'LimitInternalRecursion' to increase the limit if necessary. Use 'LogLevel debug' to get a backtrace.

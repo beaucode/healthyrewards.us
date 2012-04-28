@@ -1,0 +1,47 @@
+#! /usr/bin/webtcl
+
+source lib/parental.tcl
+content-type "text/plain"
+
+set email       [url var email]
+set password    [url var password]
+set password2   [url var password2]
+
+# Output the signup html file if no email is provided.
+if { $email == "" } {
+    content-type "text/html" -force 1
+    output -file "pages/html/Parent_Register.html"
+    return
+}
+
+proc fail {message} {
+    output -string "failed: $message"
+    return
+}
+
+# Make sure the email resembles an email address.
+if { ![string match -nocase "*@*.*" $email] } {
+    fail "bad email address"
+    return
+}
+
+# Make sure the password meets minimum requirements.
+if { [string length $password] < 4 } {
+    fail "password must be at least four characters"
+    return
+}
+
+# Make sure the passwords match.
+if { ![string equal $password $password2] } {
+    fail "passwords do not match"
+    return
+}
+
+# Attempt to create the account
+if { [parental::create $email $password] } {
+    location "/parents"
+    return
+} else {
+    fail "email address already in use"
+    return
+}

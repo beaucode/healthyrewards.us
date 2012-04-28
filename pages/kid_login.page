@@ -1,0 +1,29 @@
+#! /usr/bin/webtcl
+
+source lib/parental.tcl 
+source lib/kid.tcl
+content-type "text/plain"
+
+set username    [url var username]
+set password    [url var password]
+
+# Output the html login page if necessary.
+if { $username == "" } {
+    content-type "text/html" -force 1
+    output -file "pages/html/Kid_Login.html"
+    return
+}
+
+# Authenticate username/password.
+if { [kid::authenticatePassword $username $password] } {
+    cookie set kid_username "$username"
+    cookie set kid_hash     [parental::getHash $password]
+    location "/kids"
+    return
+} else {
+    content-type "text/html" -force 1
+    output -file "pages/html/Kid_Login_Invalid.html"
+    return
+}
+
+return

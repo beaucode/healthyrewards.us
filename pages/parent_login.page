@@ -1,0 +1,28 @@
+#! /usr/bin/webtcl
+
+source lib/parental.tcl    
+content-type "text/plain"
+
+set email       [url var email]
+set password    [url var password]
+
+# Output the html login page if necessary.
+if { $email == "" } {
+    content-type "text/html" -force 1
+    output -file "pages/html/Parent_Login.html"
+    return
+}
+
+# Authenticate email/password.
+if { [parental::authenticatePassword $email $password] } {
+    cookie set parent_email "$email"
+    cookie set parent_hash  [parental::getHash $password]
+    location "/parents"
+    return
+} else {
+    content-type "text/html" -force 1
+    output -file "pages/html/Parent_Login_Invalid.html"
+    return
+}
+
+return

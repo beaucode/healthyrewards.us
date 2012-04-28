@@ -1,0 +1,12 @@
+# Url               # Page                          # Arguments
+/signup		        pages/parent_signup.page
+/parents	        pages/parents.page
+/parents/login      pages/parent_login.page
+/parents/logout     pages/parent_logout.page
+/kids               pages/kids.page
+/kids/login         pages/kid_login.page
+/kids/logout        pages/kid_logout.page
+
+/urls               pages/urls.page
+/list               pages/list_parents.page
+/                   pages/frontpage.page

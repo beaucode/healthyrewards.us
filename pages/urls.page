@@ -1,0 +1,14 @@
+#! /usr/bin/webtcl
+   
+content-type "text/plain"
+
+source lib/parental.tcl
+source lib/kid.tcl
+
+#kid::create 1 paul abcc
+
+output -string "url get: [url get]\n"
+output -string "url path: [url path]\n"
+output -string "url query: [url query]\n"
+
+return

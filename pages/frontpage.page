@@ -1,0 +1,11 @@
+#! /usr/bin/webtcl
+
+content-type "text/html"
+
+output -string {
+    <a href='/signup'>Signup as a parent</a><br><br>
+    <a href='/parents'>Login as a parent</a><br><br>
+    <a href='/kids'>Login as a kid</a><br><br>
+}
+
+return
